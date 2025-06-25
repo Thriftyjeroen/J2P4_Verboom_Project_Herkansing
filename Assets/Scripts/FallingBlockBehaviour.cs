@@ -29,6 +29,13 @@ public class FallingBlockBehaviour : MonoBehaviour
         initDone = true;
     }
 
+    public IEnumerator FallDown()
+    {
+        yield return new WaitForSecondsRealtime(0.5f);
+        currentCell += Vector3Int.down;
+        SnapToTile(currentCell, true);
+    }
+
     IEnumerator MoveDown()
     {
         while (moving)
@@ -40,9 +47,9 @@ public class FallingBlockBehaviour : MonoBehaviour
         yield return null;
     }
 
-    private void SnapToTile(Vector3Int cellPos)
+    private void SnapToTile(Vector3Int cellPos, bool forceFall= false)
     {
-        if (!moving) return;
+        if (!moving && !forceFall) return;
 
         Vector3 cellCenter = grid.GetCellCenterWorld(cellPos);
         Vector3 cellSize = grid.cellSize;
@@ -56,6 +63,7 @@ public class FallingBlockBehaviour : MonoBehaviour
             );
 
             transform.position = topOfTile;
+
         }
         else
         {
@@ -66,12 +74,32 @@ public class FallingBlockBehaviour : MonoBehaviour
             );
 
             transform.position = sideOfTile;
+
         }
     }
 
+    /*
+    private void SnapToTile(Vector3Int cellPos, bool forceFall = false)
+    {
+        if (!moving && !forceFall) return;
+
+        foreach(Transform block in GetComponentInChildren<Transform>())
+        {
+            if (block.GetComponent<BoxCollider2D>() == null) continue;
+            else
+            {
+                block.transform.position = grid.WorldToCell(block.transform.position);
+            }
+        }
+    }
+    */
+
     void Update()
     {
-        if (!moving) return; 
+        if (!moving) return;
+        if (!initDone) return;
+
+
         foreach (GameObject pos in positions)
         {
             RaycastHit2D[] hits = Physics2D.RaycastAll(pos.transform.position, Vector3.down, 0.3f);
@@ -91,13 +119,13 @@ public class FallingBlockBehaviour : MonoBehaviour
                 if (!isSelf)
                 {
                     moving = false;
+                    StartCoroutine(gameObject.GetComponentInParent<SpawnManager>().GetComponentInChildren<LineManager>().CheckForLines());
+                    gameObject.GetComponentInParent<SpawnManager>().SpawnNewBlock();
                     return;
                 }
             }
         }
         
-        if (!initDone) return;
-        if (!moving) return;
 
         if (Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetKeyDown(KeyCode.A))
         {
