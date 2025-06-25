@@ -63,7 +63,6 @@ public class FallingBlockBehaviour : MonoBehaviour
             );
 
             transform.position = topOfTile;
-
         }
         else
         {
@@ -74,7 +73,6 @@ public class FallingBlockBehaviour : MonoBehaviour
             );
 
             transform.position = sideOfTile;
-
         }
     }
 
@@ -96,9 +94,9 @@ public class FallingBlockBehaviour : MonoBehaviour
 
     void Update()
     {
+        if (GetComponentsInChildren<BoxCollider2D>().Length == 0) Destroy(gameObject);
         if (!moving) return;
         if (!initDone) return;
-
 
         foreach (GameObject pos in positions)
         {
